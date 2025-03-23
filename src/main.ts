@@ -62,16 +62,16 @@ renderer.domElement.addEventListener("dblclick", () =>
 
 // textures
 const textureLoader = new THREE.TextureLoader();
-const floorColorTexture = textureLoader.load("/rocky_terrain_02_diff_2k.jpg");
+const floorColorTexture = textureLoader.load("./rocky_terrain_02_diff_2k.jpg");
 const floorNormalTexture = textureLoader.load(
-  "/rocky_terrain_02_nor_gl_2k.jpg"
+  "./rocky_terrain_02_nor_gl_2k.jpg"
 );
-const floorAOTexture = textureLoader.load("rocky_terrain_02_ao_2k.jpg");
+const floorAOTexture = textureLoader.load("./rocky_terrain_02_ao_2k.jpg");
 const floorRoughnessTexture = textureLoader.load(
-  "rocky_terrain_02_rough_2k.jpg"
+  "./rocky_terrain_02_rough_2k.jpg"
 );
 const floorDisplacementTexture = textureLoader.load(
-  "rocky_terrain_02_rough_2k.jpg"
+  "./rocky_terrain_02_rough_2k.jpg"
 );
 
 // objects
