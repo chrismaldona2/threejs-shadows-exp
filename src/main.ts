@@ -81,16 +81,15 @@ const floor = new THREE.Mesh(
     side: THREE.DoubleSide,
     map: floorColorTexture,
     normalMap: floorNormalTexture,
-    roughnessMap: floorRoughnessTexture,
-    roughness: 1,
     aoMap: floorAOTexture,
+    roughnessMap: floorRoughnessTexture,
     displacementMap: floorDisplacementTexture,
     displacementScale: 1,
   })
 );
 floor.receiveShadow = true;
 floor.rotation.x = -Math.PI * 0.5;
-floor.position.y = -1.47;
+floor.position.y = -1.45;
 
 const boxMaterial = new THREE.MeshStandardMaterial({ color: "red" });
 const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), boxMaterial);
@@ -114,10 +113,6 @@ const ambientLightTweaks = gui.addFolder("Ambient light");
 const directionalLightTweaks = gui.addFolder("Directional light");
 const spotLightTweaks = gui.addFolder("Spot light");
 const pointLightTweaks = gui.addFolder("Point light");
-ambientLightTweaks.open();
-directionalLightTweaks.open();
-spotLightTweaks.open();
-pointLightTweaks.open();
 
 //
 //
@@ -268,7 +263,7 @@ directionalLightCameraTweaks
 //
 //
 //
-const spotLight = new THREE.SpotLight(0xffffff, 30, 8, Math.PI * 0.2, 0.25);
+const spotLight = new THREE.SpotLight(0xffffff, 30, 20, Math.PI * 0.2, 0.25);
 spotLight.position.set(-5, 3, -1);
 spotLight.castShadow = true;
 spotLight.shadow.camera.near = 2.5;
@@ -281,6 +276,16 @@ spotLight.shadow.mapSize.set(spotLightShadow.mapSize, spotLightShadow.mapSize);
 spotLight.target.position.copy(torus.position);
 spotLightTweaks.addColor(spotLight, "color");
 spotLightTweaks.add(spotLight, "intensity").min(0).max(60).step(0.1);
+spotLightTweaks.add(spotLight, "distance").min(0.1).max(50).step(0.1);
+
+spotLightTweaks
+  .add(spotLight, "angle")
+  .min(0)
+  .max(Math.PI * 0.5)
+  .step(0.1);
+spotLightTweaks.add(spotLight, "penumbra").min(0).max(1).step(0.1);
+
+spotLightTweaks.add(spotLight, "decay").min(0).max(5).step(0.1);
 
 const spotLightHelper = new THREE.SpotLightHelper(spotLight);
 spotLightHelper.visible = false;
@@ -396,13 +401,6 @@ pointLightTweaks
   .name("controls")
   .onChange((value: boolean) => (pointLightControls.enabled = value));
 
-const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
-pointLightCameraHelper.visible = false;
-const pointLightCameraTweaks = pointLightTweaks.addFolder("Shadow camera");
-pointLightCameraTweaks
-  .add(pointLightCameraHelper, "visible")
-  .name("show helper");
-
 const pointLightShadowTweaks = pointLightTweaks.addFolder("Shadow");
 const pointLightShadow = {
   mapSize: 512,
@@ -427,6 +425,30 @@ pointLightShadowTweaks
     pointLight.shadow.map = null;
     pointLight.shadow.needsUpdate = true;
   });
+
+const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
+pointLightCameraHelper.visible = false;
+const pointLightCameraTweaks = pointLightTweaks.addFolder("Shadow camera");
+pointLightCameraTweaks
+  .add(pointLightCameraHelper, "visible")
+  .name("show helper");
+const updatePointLightShadowCamera = () => {
+  pointLight.shadow.camera.updateProjectionMatrix();
+  pointLight.shadow.needsUpdate = true;
+  pointLightCameraHelper.update();
+};
+pointLightCameraTweaks
+  .add(pointLight.shadow.camera, "near")
+  .min(0.1)
+  .max(10)
+  .step(0.1)
+  .onChange(updatePointLightShadowCamera);
+pointLightCameraTweaks
+  .add(pointLight.shadow.camera, "far")
+  .min(0.5)
+  .max(20)
+  .step(0.1)
+  .onChange(updatePointLightShadowCamera);
 
 scene.add(
   floor,
