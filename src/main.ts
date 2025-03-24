@@ -62,52 +62,102 @@ renderer.domElement.addEventListener("dblclick", () =>
 
 // textures
 const textureLoader = new THREE.TextureLoader();
-const floorColorTexture = textureLoader.load("./rocky_terrain_02_diff_2k.jpg");
-const floorNormalTexture = textureLoader.load(
-  "./rocky_terrain_02_nor_gl_2k.jpg"
-);
-const floorAOTexture = textureLoader.load("./rocky_terrain_02_ao_2k.jpg");
-const floorRoughnessTexture = textureLoader.load(
-  "./rocky_terrain_02_rough_2k.jpg"
-);
-const floorDisplacementTexture = textureLoader.load(
-  "./rocky_terrain_02_rough_2k.jpg"
-);
+const floorColor = textureLoader.load("./floor/color.webp");
+const floorNormal = textureLoader.load("./floor/normal.webp");
+const floorARM = textureLoader.load("./floor/arm.webp");
+const floorDisplacement = textureLoader.load("./floor/displacement.webp");
+
+const floorTextureRepetition = 3;
+floorColor.colorSpace = THREE.SRGBColorSpace;
+
+floorColor.repeat.set(floorTextureRepetition, floorTextureRepetition);
+floorColor.wrapS = THREE.RepeatWrapping;
+floorColor.wrapT = THREE.RepeatWrapping;
+floorNormal.repeat.set(floorTextureRepetition, floorTextureRepetition);
+floorNormal.wrapS = THREE.RepeatWrapping;
+floorNormal.wrapT = THREE.RepeatWrapping;
+floorARM.repeat.set(floorTextureRepetition, floorTextureRepetition);
+floorARM.wrapS = THREE.RepeatWrapping;
+floorARM.wrapT = THREE.RepeatWrapping;
+floorDisplacement.repeat.set(floorTextureRepetition, floorTextureRepetition);
+floorDisplacement.wrapS = THREE.RepeatWrapping;
+floorDisplacement.wrapT = THREE.RepeatWrapping;
+
+const baseColor = textureLoader.load("./base/color.webp");
+const baseNormal = textureLoader.load("./base/normal.webp");
+const baseARM = textureLoader.load("./base/arm.webp");
+
+baseColor.colorSpace = THREE.SRGBColorSpace;
+const baseTextureRepetitionX = 4;
+const baseTextureRepetitionY = 2;
+
+baseColor.repeat.set(baseTextureRepetitionX, baseTextureRepetitionY);
+baseColor.wrapS = THREE.RepeatWrapping;
+baseColor.wrapT = THREE.RepeatWrapping;
+baseNormal.repeat.set(baseTextureRepetitionX, baseTextureRepetitionY);
+baseNormal.wrapS = THREE.RepeatWrapping;
+baseNormal.wrapT = THREE.RepeatWrapping;
+baseARM.repeat.set(baseTextureRepetitionX, baseTextureRepetitionY);
+baseARM.wrapS = THREE.RepeatWrapping;
+baseARM.wrapT = THREE.RepeatWrapping;
 
 // objects
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(10, 10, 100, 100),
   new THREE.MeshStandardMaterial({
-    side: THREE.DoubleSide,
-    map: floorColorTexture,
-    normalMap: floorNormalTexture,
-    aoMap: floorAOTexture,
-    roughnessMap: floorRoughnessTexture,
-    displacementMap: floorDisplacementTexture,
-    displacementScale: 1,
+    map: floorColor,
+    normalMap: floorNormal,
+    aoMap: floorARM,
+    roughnessMap: floorARM,
+    metalnessMap: floorARM,
+    displacementMap: floorDisplacement,
+    displacementScale: 0.35,
+    displacementBias: -0.3,
   })
 );
 floor.receiveShadow = true;
 floor.rotation.x = -Math.PI * 0.5;
-floor.position.y = -1.45;
+floor.position.y = -0.5;
+
+const baseWithGeometries = new THREE.Group();
+
+const base = new THREE.Mesh(
+  new THREE.BoxGeometry(6, 2, 4, 1, 1),
+  new THREE.MeshStandardMaterial({
+    map: baseColor,
+    normalMap: baseNormal,
+    roughnessMap: baseARM,
+    metalnessMap: baseARM,
+    aoMap: baseARM,
+  })
+);
+base.castShadow = true;
+base.receiveShadow = true;
+base.position.y = -1.35;
+baseWithGeometries.add(base);
 
 const boxMaterial = new THREE.MeshStandardMaterial({ color: "red" });
 const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), boxMaterial);
 box.castShadow = true;
 box.receiveShadow = true;
 box.position.x = -1.5;
+box.position.y = 0.15;
 
 const torusMaterial = new THREE.MeshStandardMaterial({ color: "yellow" });
 const torus = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.1), torusMaterial);
 torus.castShadow = true;
 torus.receiveShadow = true;
 torus.position.x = 0;
+torus.position.y = 0.15;
 
 const coneMaterial = new THREE.MeshStandardMaterial({ color: "blue" });
 const cone = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1, 6, 1), coneMaterial);
 cone.castShadow = true;
 cone.receiveShadow = true;
 cone.position.x = 1.5;
+cone.position.y = 0.15;
+
+baseWithGeometries.add(box, torus, cone);
 
 const ambientLightTweaks = gui.addFolder("Ambient light");
 const directionalLightTweaks = gui.addFolder("Directional light");
@@ -373,7 +423,7 @@ spotLightCameraTweaks
 //
 //
 const pointLight = new THREE.PointLight("blue", 50, 8);
-pointLight.position.set(1.5, 1, 0);
+pointLight.position.set(1.5, 1.25, 0);
 pointLight.castShadow = true;
 pointLight.shadow.camera.far = 2;
 
@@ -452,9 +502,7 @@ pointLightCameraTweaks
 
 scene.add(
   floor,
-  box,
-  torus,
-  cone,
+  baseWithGeometries,
   ambientLight,
   directionalLight,
   directionalLightHelper,
